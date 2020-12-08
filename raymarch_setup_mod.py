@@ -1,6 +1,6 @@
 # Note: There was old version which was done wrongly long time ago
 #       Ive noticed a few people using this lately and wanted to fix this
-#       
+#
 #
 #       This is the fixed version where both "vao" and "vbo" are created
 #       Everything else is the same
@@ -91,7 +91,7 @@ vec3 ray_march(in vec3 ro, in vec3 rd)
 
         float distance_to_closest = map_the_world(current_position);
 
-        if (distance_to_closest < MINIMUM_HIT_DISTANCE) 
+        if (distance_to_closest < MINIMUM_HIT_DISTANCE)
         {
             vec3 normal = calculate_normal(current_position);
             vec3 light_position = vec3(-iMouse.x, iMouse.y, 4.0);
@@ -131,9 +131,12 @@ void main()
 class Main(object):
     def __init__(self):
         pygame.init()
-        self.resolution = 800, 600  
+        self.resolution = 800, 600
+        pygame.display.gl_set_attribute(pygame.GL_CONTEXT_PROFILE_MASK, pygame.GL_CONTEXT_PROFILE_CORE)
+        pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MAJOR_VERSION, 3)
+        pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MINOR_VERSION, 3)
         pygame.display.set_mode(self.resolution, DOUBLEBUF | OPENGL)
-        pygame.display.set_caption('PyShadeToy')        
+        pygame.display.set_caption('PyShadeToy')
 
         # Shaders
         self.vertex_shader = shaders.compileShader(VERTEX_SHADER, GL_VERTEX_SHADER)
@@ -148,7 +151,7 @@ class Main(object):
         # Resolution doesn't change. Send it once
         self.uni_resolution = glGetUniformLocation(self.shader, 'iResolution')
         glUniform2f(self.uni_resolution, *self.resolution)
-        
+
         # Create the fullscreen quad for drawing
         self.vertices = array([-1.0, -1.0, 0.0,
                                 1.0, -1.0, 0.0,
@@ -184,20 +187,20 @@ class Main(object):
                 elif event.type == MOUSEBUTTONDOWN:
                     if event.button == 4:
                         pass
-            
+
             glUseProgram(self.shader)
 
             # Map mouse coordinates between -1 and 1 range
             mx, my = pygame.mouse.get_pos()
             mx = (1.0 / self.resolution[0] * mx) * 2.0 - 1.0
             my = (1.0 / self.resolution[1] * my) * 2.0 - 1.0
-            
+
             glUniform2f(self.uni_mouse, mx, my)
             glUniform1f(self.uni_ticks, pygame.time.get_ticks() / 1000.0)
 
             # Bind the vao (which stores the VBO with all the vertices)
             glBindVertexArray(self.vao)
-            glDrawArrays(GL_QUADS, 0, 4)
+            glDrawArrays(GL_TRIANGLE_FAN, 0, 4)
 
             pygame.display.set_caption("FPS: {}".format(self.clock.get_fps()))
             pygame.display.flip()

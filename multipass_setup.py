@@ -1,6 +1,6 @@
 # Note: There was old version which was done wrongly long time ago
 #       Ive noticed a few people using this lately and wanted to fix this
-#       
+#
 #
 #       This is the fixed version where both "vao" and "vbo" are created
 #       Everything else is the same
@@ -11,7 +11,7 @@ import pygame
 from pygame.locals import *
 
 import ctypes as ct
-from OpenGL.GL import * 
+from OpenGL.GL import *
 from OpenGL.GL import shaders
 #from OpenGL.GLU import *
 
@@ -85,11 +85,14 @@ void main()
 class Main(object):
     def __init__(self):
         pygame.init()
-        self.resolution = 800, 600  
+        self.resolution = 800, 600
+        pygame.display.gl_set_attribute(pygame.GL_CONTEXT_PROFILE_MASK, pygame.GL_CONTEXT_PROFILE_CORE)
+        pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MAJOR_VERSION, 3)
+        pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MINOR_VERSION, 3)
         pygame.display.set_mode(self.resolution, DOUBLEBUF | OPENGL)
-        pygame.display.set_caption('PyShadeToy')        
+        pygame.display.set_caption('PyShadeToy')
 
-        # ------------------ Build the first shader ------------------ 
+        # ------------------ Build the first shader ------------------
         # Shaders
         self.vertex_shader = shaders.compileShader(VERTEX_SHADER_FIRST, GL_VERTEX_SHADER)
         self.fragment_shader = shaders.compileShader(FRAGMENT_SHADER_FIRST, GL_FRAGMENT_SHADER)
@@ -106,7 +109,7 @@ class Main(object):
         glUniform2f(glGetUniformLocation(self.shader, 'iResolution'), *self.resolution)
 
 
-        #  ------------------ Build the second shader  ------------------ 
+        #  ------------------ Build the second shader  ------------------
         self.vertex_shader2 = shaders.compileShader(VERTEX_SHADER_SECOND, GL_VERTEX_SHADER)
         self.fragment_shader2 = shaders.compileShader(FRAGMENT_SHADER_SECOND, GL_FRAGMENT_SHADER)
 
@@ -114,8 +117,8 @@ class Main(object):
         self.shader2 = shaders.compileProgram(self.vertex_shader2, self.fragment_shader2)
 
 
-        
-        #  ------------------ Build the first vao  ------------------ 
+
+        #  ------------------ Build the first vao  ------------------
         # Create the fullscreen quad for drawing
         self.vertices = array([-1.0, -1.0, 0.0,
                                 1.0, -1.0, 0.0,
@@ -136,9 +139,9 @@ class Main(object):
 
 
 
-        #  ------------------Build the second vao  ------------------ 
+        #  ------------------Build the second vao  ------------------
         # Create the fullscreen quad for drawing (This time we need texture coordinates too)
-        self.vertices2 = array([-1.0, -1.0, 0.0,  0.0, 0.0, 
+        self.vertices2 = array([-1.0, -1.0, 0.0,  0.0, 0.0,
                                  1.0, -1.0, 0.0,  1.0, 0.0,
                                  1.0,  1.0, 0.0,  1.0, 1.0,
                                 -1.0,  1.0, 0.0,  0.0, 1.0], dtype='float32')
@@ -161,16 +164,16 @@ class Main(object):
         # The last is the offset which tells the OpenGL where the texture coordinates begin
         # from the stride
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * 5, ctypes.cast(4 * 3, ctypes.c_void_p))
-        
 
-        
-        #  ------------------ Generate framebuffer  ------------------  
+
+
+        #  ------------------ Generate framebuffer  ------------------
         self.frame, self.texture = self.genFrameBuffer()
 
-        
+
         self.clock = pygame.time.Clock()
 
-    
+
     def genFrameBuffer(self):
         """
             Generate Framebuffer and attach color texture to it
@@ -189,24 +192,24 @@ class Main(object):
         w, h = self.resolution
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, None)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR) 
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
 
         # Attach it to the framebuffer
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0)
 
         # Note: There would depth and stencil attachment here but since we are doing
         # fullscreen quad without 3d models, depth texture is not needed
-        
+
         # Make sure the frame buffer is complete
         if glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE:
-            print "Success!"
+            print("Success!")
 
         # Unbind it
         glBindFramebuffer(GL_FRAMEBUFFER, 0)
 
         return frame, texture
 
-    
+
     def mainloop(self):
         while 1:
             delta = self.clock.tick(8192)
@@ -217,11 +220,11 @@ class Main(object):
                     exitsystem()
 
 
-            #  ------------------ first pass  ------------------ 
+            #  ------------------ first pass  ------------------
             glBindFramebuffer(GL_FRAMEBUFFER, self.frame)
             glClearColor(0.0, 0.0, 0.0, 1.0)
             glClear(GL_COLOR_BUFFER_BIT)
-            
+
             glUseProgram(self.shader)
 
             # Send uniform values
@@ -230,13 +233,13 @@ class Main(object):
 
             # Bind the vao (which stores the VBO with all the vertices)
             glBindVertexArray(self.vao)
-            glDrawArrays(GL_QUADS, 0, 4)
+            glDrawArrays(GL_TRIANGLE_FAN, 0, 4)
 
             # Lets go back to the default screen buffer
             glBindFramebuffer(GL_FRAMEBUFFER, 0)
 
 
-            #  ------------------ Second pass  ------------------ 
+            #  ------------------ Second pass  ------------------
             glClearColor(0.0, 0.0, 0.0, 1.0)
             glClear(GL_COLOR_BUFFER_BIT)
 
@@ -246,10 +249,10 @@ class Main(object):
 
             # Draw the fullscreen quad using the texture
             glBindVertexArray(self.vao2)
-            glDrawArrays(GL_QUADS, 0, 4)
+            glDrawArrays(GL_TRIANGLE_FAN, 0, 4)
 
 
-            
+
             pygame.display.set_caption("FPS: {}".format(self.clock.get_fps()))
             pygame.display.flip()
 

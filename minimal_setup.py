@@ -1,6 +1,6 @@
 # Note: There was old version which was done wrongly long time ago
 #       Ive noticed a few people using this lately and wanted to fix this
-#       
+#
 #
 #       This is the fixed version where both "vao" and "vbo" are created
 #       Everything else is the same
@@ -10,7 +10,7 @@ from __future__ import division
 import pygame
 from pygame.locals import *
 
-from OpenGL.GL import * 
+from OpenGL.GL import *
 from OpenGL.GL import shaders
 #from OpenGL.GLU import *
 
@@ -51,9 +51,12 @@ void main()
 class Main(object):
     def __init__(self):
         pygame.init()
-        self.resolution = 800, 600  
+        self.resolution = 800, 600
+        pygame.display.gl_set_attribute(pygame.GL_CONTEXT_PROFILE_MASK, pygame.GL_CONTEXT_PROFILE_CORE)
+        pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MAJOR_VERSION, 3)
+        pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MINOR_VERSION, 3)
         pygame.display.set_mode(self.resolution, DOUBLEBUF | OPENGL)
-        pygame.display.set_caption('PyShadeToy')        
+        pygame.display.set_caption('PyShadeToy')
 
         # Shaders
         self.vertex_shader = shaders.compileShader(VERTEX_SHADER, GL_VERTEX_SHADER)
@@ -69,7 +72,7 @@ class Main(object):
         glUseProgram(self.shader)   # Need to be enabled before sending uniform variables
         # Resolution doesn't change. Send it once
         glUniform2f(glGetUniformLocation(self.shader, 'iResolution'), *self.resolution)
-        
+
         # Create the fullscreen quad for drawing
         self.vertices = array([-1.0, -1.0, 0.0,
                                 1.0, -1.0, 0.0,
@@ -88,7 +91,7 @@ class Main(object):
         glEnableVertexAttribArray(0)
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, None)
 
-        
+
         self.clock = pygame.time.Clock()
 
     def mainloop(self):
@@ -102,7 +105,7 @@ class Main(object):
                 if (event.type == QUIT) or (event.type == KEYUP and event.key == K_ESCAPE):
                     pygame.quit()
                     exitsystem()
-                    
+
             glUseProgram(self.shader)
 
             # Send uniform values
@@ -111,7 +114,7 @@ class Main(object):
 
             # Bind the vao (which stores the VBO with all the vertices)
             glBindVertexArray(self.vao)
-            glDrawArrays(GL_QUADS, 0, 4)
+            glDrawArrays(GL_TRIANGLE_FAN, 0, 4)
 
             pygame.display.set_caption("FPS: {}".format(self.clock.get_fps()))
             pygame.display.flip()
